@@ -1,11 +1,12 @@
 import mongoose from "mongoose";
-
+import bcrypt from "bcryptjs";
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
         required: [true, 'Please tell us your name!'],
     },
     phoneNumber:{
+        unique: true,
         type: String,
         required: [true, 'Please provide your phone number!']
     },
@@ -16,7 +17,8 @@ const userSchema = new mongoose.Schema({
     },
     isAdmin:{
         type: Boolean,
-        default: false
+        default: false,
+        select: false
     },
     cabNo:{
         type: String,
@@ -28,6 +30,15 @@ const userSchema = new mongoose.Schema({
         minlength: 8,
         select: false
     },
+});
+
+
+
+userSchema.pre('save', async function (next) {
+    // Hash the password with cost of 12
+    this.password = await bcrypt.hash(this.password, 12);
+    // Delete passwordConfirm field
+    next();
 });
 
 const User = mongoose.model('User', userSchema);
